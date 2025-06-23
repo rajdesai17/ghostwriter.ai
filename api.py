@@ -83,6 +83,13 @@ def list_profiles() -> List[dict]:
     return result
 
 def save_samples(path: str, samples: str, mode: str = "w"):
+    if mode == "w":
+        # For new profiles, format samples with proper markers
+        formatted_content = format_samples_with_markers(samples)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(formatted_content)
+        return
+    
     # If appending and file contains SAMPLE markers, wrap new content accordingly
     if mode == "a" and os.path.exists(path):
         with open(path, "r", encoding="utf-8") as existing:
@@ -92,17 +99,73 @@ def save_samples(path: str, samples: str, mode: str = "w"):
 
         if marker_lines:
             next_num = len(marker_lines) + 1
-            wrapper = f"\n\n--- SAMPLE {next_num} START ---\n" + samples.strip() + f"\n--- SAMPLE {next_num} END ---"
+            # Use the same conservative logic as format_samples_with_markers
+            formatted_content = format_samples_with_markers(samples)
+            
+            # Extract the samples from the formatted content and renumber them
+            import re
+            sample_pattern = r'--- SAMPLE \d+ START ---\n(.*?)\n--- SAMPLE \d+ END ---'
+            found_samples = re.findall(sample_pattern, formatted_content, re.DOTALL)
+            
+            formatted_additions = []
+            for i, sample_content in enumerate(found_samples):
+                sample_num = next_num + i
+                formatted_additions.append(f"\n\n--- SAMPLE {sample_num} START ---\n{sample_content}\n--- SAMPLE {sample_num} END ---")
+            
             with open(path, "a", encoding="utf-8") as f:
-                f.write(wrapper)
+                f.write("".join(formatted_additions))
             return
 
-    # Default behaviour
+    # Default behaviour for appending to files without markers
     with open(path, mode, encoding="utf-8") as f:
         if mode == "a":
             f.write("\n\n" + samples.strip())
         else:
             f.write(samples.strip())
+
+def format_samples_with_markers(samples: str) -> str:
+    """Format raw samples with proper SAMPLE markers"""
+    # Be very conservative - only split on explicit separators
+    # Look for explicit separators like "=== NEW POST ===" or "--- NEW SAMPLE ---"
+    explicit_separators = [
+        "=== NEW POST ===",
+        "--- NEW SAMPLE ---", 
+        "=== SEPARATE POST ===",
+        "--- SEPARATE POST ---",
+        "=== NEW ===",
+        "--- NEW ---"
+    ]
+    
+    # Check if any explicit separators exist
+    content = samples.strip()
+    sample_list = [content]  # Default to one sample
+    
+    for separator in explicit_separators:
+        if separator in content:
+            # Split on this separator and clean up
+            parts = [part.strip() for part in content.split(separator) if part.strip()]
+            if len(parts) > 1:
+                sample_list = parts
+                break
+    
+    # Fallback: only split if there are 5+ consecutive newlines (very rare)
+    if len(sample_list) == 1:
+        very_large_gaps = [s.strip() for s in content.split("\n\n\n\n\n") if s.strip()]
+        if len(very_large_gaps) > 1:
+            # Additional validation: each part should be substantial (200+ chars)
+            validated = [part for part in very_large_gaps if len(part) >= 200]
+            if len(validated) == len(very_large_gaps):  # All parts are substantial
+                sample_list = validated
+    
+    if not sample_list:
+        return samples.strip()
+    
+    formatted_samples = []
+    for i, sample in enumerate(sample_list, 1):
+        formatted_sample = f"--- SAMPLE {i} START ---\n{sample}\n--- SAMPLE {i} END ---"
+        formatted_samples.append(formatted_sample)
+    
+    return "\n\n".join(formatted_samples)
 
 # LangChain prompt
 def build_prompt():
@@ -119,11 +182,59 @@ Context: {context}
 Additional Instructions: {custom_instruction}
 
 CRITICAL INSTRUCTIONS:
-- Write ONLY the LinkedIn post content
-- Do NOT include any explanations, analysis, or meta-commentary
-- Do NOT mention voice analysis or style matching
-- Do NOT start with phrases like "Here's a LinkedIn post that..."
-- Write as if you ARE the user posting directly
+- Write ONLY the LinkedIn post content - NO explanations or introductions
+- Do NOT include ANY meta-commentary, analysis, or descriptions
+- Do NOT mention voice analysis, style matching, or the generation process
+- Do NOT start with phrases like "Here's a LinkedIn post", "Here's a post", "This post", etc.
+- Do NOT include any text that explains what you're doing
+- Start directly with the post content - as if you ARE the user posting
+- The first line should be the actual opening of the LinkedIn post
+
+ABSOLUTELY AVOID THESE AI-GENERATED CLICHÉS:
+❌ "Thrilled to announce"
+❌ "Excited to share"
+❌ "Proud to announce"
+❌ "Happy to share"
+❌ "Delighted to announce"
+❌ "Pleased to share"
+❌ "I'm excited to tell you"
+❌ Starting with emojis or excessive enthusiasm
+❌ Generic corporate speak
+❌ Overly promotional language
+
+INSTEAD, START WITH:
+✅ A direct statement or observation
+✅ A personal experience or story
+✅ A contrarian or thought-provoking statement
+✅ A problem or question that hooks the reader
+✅ A specific example or case study
+✅ Clean, professional, and conversational tone
+
+FOR TECHNICAL PROFILES, USE THIS EXACT FORMAT:
+→ Use ONLY arrows (→) for bullet points, NEVER use • or emojis
+→ Keep language clean and technical but conversational
+→ Include specific implementation details when relevant
+→ Follow problem → solution → how it works structure
+→ Avoid ALL emojis and promotional language
+→ Focus on the technical "why" and "how"
+
+EXAMPLE OF CORRECT BULLET FORMAT:
+→ First point with arrow
+→ Second point with arrow
+→ Third point with arrow
+
+NOT:
+• Standard bullet
+🔥 Emoji bullet
+- Dash bullet
+
+WRONG OUTPUT FORMAT (NEVER DO THIS):
+"Here's a LinkedIn post that matches your style:
+
+[post content]"
+
+CORRECT OUTPUT FORMAT (ALWAYS DO THIS):
+"[post content starts immediately]"
 
 LinkedIn Post:"""
     return PromptTemplate(input_variables=["style_examples", "context", "custom_instruction"], template=template)

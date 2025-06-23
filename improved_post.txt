@@ -1,0 +1,13 @@
+﻿ð® Writing LinkedIn posts like a pro, but struggling to sound authentic? I know the feeling. 
+
+As someone who's tried AI-generated posts, I've seen how they can come across as forced or robotic. But what if you could write LinkedIn posts that feel like you wrote them yourself - without sacrificing time or creativity?
+
+Introducing Ghostwriter - my tool for crafting clean, professional, and conversational LinkedIn posts, powered by OLLAMA LangChain.
+
+ð¹ No internet required
+ð¹ No ChatGPT needed
+ð¹ Just a local workflow that lets me focus on what matters most - the message.
+
+Ghostwriter helps me write LinkedIn posts that feel like they were written by a human (because they are). By providing context and insights, it allows me to create engaging content that resonates with my audience.
+
+Want to try it out? Let's see how I do!

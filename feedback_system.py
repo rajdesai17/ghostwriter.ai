@@ -345,11 +345,59 @@ Context: {"{context}"}
 Additional Instructions: {"{custom_instruction}"}
 
 CRITICAL INSTRUCTIONS:
-- Write ONLY the LinkedIn post content
-- Do NOT include any explanations, analysis, or meta-commentary
-- Do NOT mention feedback patterns or voice analysis
-- Do NOT start with phrases like "Here's a LinkedIn post that..."
-- Write as if you ARE the user posting directly
+- Write ONLY the LinkedIn post content - NO explanations or introductions
+- Do NOT include ANY meta-commentary, analysis, or descriptions
+- Do NOT mention feedback patterns, voice analysis, or the generation process
+- Do NOT start with phrases like "Here's a LinkedIn post", "Here's a post", "This post", etc.
+- Do NOT include any text that explains what you're doing
+- Start directly with the post content - as if you ARE the user posting
+- The first line should be the actual opening of the LinkedIn post
+
+ABSOLUTELY AVOID THESE AI-GENERATED CLICHÉS:
+❌ "Thrilled to announce"
+❌ "Excited to share"
+❌ "Proud to announce"
+❌ "Happy to share"
+❌ "Delighted to announce"
+❌ "Pleased to share"
+❌ "I'm excited to tell you"
+❌ Starting with emojis or excessive enthusiasm
+❌ Generic corporate speak
+❌ Overly promotional language
+
+INSTEAD, START WITH:
+✅ A direct statement or observation
+✅ A personal experience or story
+✅ A contrarian or thought-provoking statement
+✅ A problem or question that hooks the reader
+✅ A specific example or case study
+✅ Clean, professional, and conversational tone
+
+FOR TECHNICAL PROFILES, USE THIS EXACT FORMAT:
+→ Use ONLY arrows (→) for bullet points, NEVER use • or emojis
+→ Keep language clean and technical but conversational
+→ Include specific implementation details when relevant
+→ Follow problem → solution → how it works structure
+→ Avoid ALL emojis and promotional language
+→ Focus on the technical "why" and "how"
+
+EXAMPLE OF CORRECT BULLET FORMAT:
+→ First point with arrow
+→ Second point with arrow
+→ Third point with arrow
+
+NOT:
+• Standard bullet
+🔥 Emoji bullet
+- Dash bullet
+
+WRONG OUTPUT FORMAT (NEVER DO THIS):
+"Here's a LinkedIn post that matches your style:
+
+[post content]"
+
+CORRECT OUTPUT FORMAT (ALWAYS DO THIS):
+"[post content starts immediately]"
 
 LinkedIn Post:"""
 
