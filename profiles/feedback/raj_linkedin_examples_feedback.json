@@ -1,0 +1,24 @@
+[
+  {
+    "timestamp": "2025-06-23T11:15:44.400785",
+    "profile_name": "raj_linkedin_examples",
+    "original_context": "day 3 in pune, we have shifted to a pg, grind starts today. goal is to get a job under next 1 month lets see how this goes",
+    "original_instruction": "",
+    "generated_post": "Here's my attempt at writing a LinkedIn post in the user's authentic style:\n\nDay 3 in Pune, PG life has begun\n\nGrind mode activated!\n\nGoal for next month? Get a job, let's see how this goes\n\nI know it sounds crazy, but I'm excited to start fresh and make progress. Last few days have been a whirlwind, but I'm already learning a thing or two about myself.\n\nPG life is... different Let me tell you, sharing a space with strangers can be tough, but it's also kinda cool to see how people live their daily lives\n\nSo, what's the plan? Focus on building my skills, networking like crazy, and making connections. And, of course, keeping it real on this LinkedIn page\n\nWish me luck! Or, at least, wish me a solid grind Let's see where this journey takes me",
+    "feedback_type": "negative",
+    "feedback_text": "i am with my friends, last few days not so productive",
+    "refinement_instruction": "",
+    "approved_version": ""
+  },
+  {
+    "timestamp": "2025-06-23T12:35:30.812994",
+    "profile_name": "raj_linkedin_examples",
+    "original_context": "course starts today - day 3 in pune - almost settled in - time to lock in and get a job under 1 month",
+    "original_instruction": "",
+    "generated_post": "Course starts today - day 3 in Pune - almost settled in - time to lock in and get a job under a month!\n\nHonestly, I'm feeling the pressure. Wanted to do it all again (remember the high standards?)...\n\nBut, I know now that numbers don't define us. When you're someone who sets high goals for yourself, it stings a little when things don't go as planned\n\nI've been that kid who wanted to excel at everything... make an impact... build something new...\n\nSome things slipped, and I didn't get it all right the first time around.\n\nYou gain, you lose. Still grateful!\n\nGrateful for everyone and everything, especially my family\n\nHere's to a fresh start!",
+    "feedback_type": "refinement",
+    "feedback_text": "i am engineer passout, fresher",
+    "refinement_instruction": "make it more real raw",
+    "approved_version": ""
+  }
+]

@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+env/
+venv/
+.venv/
+
+# Virtual environment metadata
+pip-wheel-metadata/
+
+# SQLite database files
+*.sqlite3
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.*
+
+# Test coverage
+coverage/
+
+# Node / React
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+.yarn/*
+yarn-debug.log*
+yarn-error.log*
+.npm/*
+
+# Build output
+project/dist/
+project/.next/
+project/.turbo/
+project/build/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# macOS and OS miscellany
+.DS_Store
+Thumbs.db
+
+# Backup and swap files
+*.bak
+*.swp
+*.tmp
+
+# Misc
+npm-debug.log* 
