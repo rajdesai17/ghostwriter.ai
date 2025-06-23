@@ -111,3 +111,34 @@ Execution doesn't guarantee success, it guarantees progress. And that's rare.
 
 The show must go on.
 --- SAMPLE 7 END --- 
+
+--- SAMPLE 8 START ---
+NOW AI AGENTS CAN MOVE MONEY.
+
+What made that possible? Payman!
+
+Before I show you what I built, here’s what Payman is:
+⚡Payman is a secure financial platform that lets AI agents move real money — without ever giving them direct access to user funds.
+Think of it as the missing trust layer between AI and finance, with built-in controls, approvals, and full compliance baked in.
+
+So recently, I participated in Payman AI Dev Challenge #2 where I built two AI agents that do more than chat — they transact.
+
+1. GiftAgent, an AI-powered birthday gift automation platform that helps you never miss a birthday and send thoughtful gifts to your loved ones. You can:
+→ Schedule a gift in advance for any contact
+ → Just say, “Send flowers to Mom tomorrow” — it handles the rest
+ → It fetches gift ideas, tracks preferences, and triggers payment via Payman
+Flow: Sign up → Add contacts → Schedule or chat → Gift delivered. Fully automated.
+
+2. AgentVC, a fun LLM-powered mock investor. You pitch a startup → it asks you questions → rates your pitch → and funds your idea with TSD$ if it likes the pitch.
+→ Fully chat-based
+ → Gives honest feedback
+ → If your pitch score ≥ 6, it sends TSD$ to your wallet via Payman
+
+🔐 Both agents use Payman OAuth and SDK to securely authorize and trigger wallet-based transactions inside AI flows.
+Built with React + TypeScript + Tailwind, Supabase for storage, and deployed via Vercel in under a week.
+
+• Payman was rock solid — clean docs and smooth integration,
+agents can now think, decide, and move money — safely and programmatically.
+
+It's great to see how fast the AI x Finance is evolving.🚀
+--- SAMPLE 8 END ---

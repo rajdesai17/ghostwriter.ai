@@ -59,8 +59,17 @@ def list_profiles() -> List[dict]:
         if not os.path.exists(path):
             continue
         with open(path, "r", encoding="utf-8") as f:
-            content = f.read().strip()
-        samples = [s for s in content.split("\n\n") if s.strip()]
+            content = f.read()
+
+        # Detect numbered sample markers if present (e.g., "--- SAMPLE 1 START ---")
+        marker_lines = [line for line in content.splitlines() if line.strip().startswith("--- SAMPLE") and "START" in line]
+
+        if marker_lines:
+            # Each marker corresponds to one sample
+            samples = marker_lines
+        else:
+            # Fallback: split by double newline blocks
+            samples = [s for s in content.strip().split("\n\n") if s.strip()]
         
         # Get feedback summary
         feedback_summary = feedback_store.get_profile_feedback_summary(p)
@@ -74,6 +83,21 @@ def list_profiles() -> List[dict]:
     return result
 
 def save_samples(path: str, samples: str, mode: str = "w"):
+    # If appending and file contains SAMPLE markers, wrap new content accordingly
+    if mode == "a" and os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as existing:
+            content = existing.read()
+
+        marker_lines = [line for line in content.splitlines() if line.strip().startswith("--- SAMPLE") and "START" in line]
+
+        if marker_lines:
+            next_num = len(marker_lines) + 1
+            wrapper = f"\n\n--- SAMPLE {next_num} START ---\n" + samples.strip() + f"\n--- SAMPLE {next_num} END ---"
+            with open(path, "a", encoding="utf-8") as f:
+                f.write(wrapper)
+            return
+
+    # Default behaviour
     with open(path, mode, encoding="utf-8") as f:
         if mode == "a":
             f.write("\n\n" + samples.strip())
