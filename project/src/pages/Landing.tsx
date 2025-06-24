@@ -3,39 +3,13 @@ import { Link } from 'react-router-dom';
 import { PenTool, Sparkles, Users, Zap, ArrowRight } from 'lucide-react';
 import { Button } from '../components/Button';
 import { GradientText } from "@/components/ui/gradient-text";
+import { GhostwriterNavbar } from "@/components/ui/ghostwriter-navbar";
 
 export function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       {/* Navigation */}
-      <nav className="relative z-10 px-6 lg:px-8 py-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gray-900 rounded-xl p-2">
-              <PenTool className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 tracking-tight">Ghostwriter</span>
-          </div>
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/generate" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-              Features
-            </Link>
-            <Link to="/profiles" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-              Profiles
-            </Link>
-            <div className="flex items-center space-x-3">
-              <button className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                Log in
-              </button>
-              <Link to="/generate">
-                <Button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2.5 rounded-full">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <GhostwriterNavbar />
 
       {/* Hero Section */}
       <div className="relative z-10 px-6 lg:px-8 pt-16 pb-24">
@@ -151,7 +125,7 @@ export function Landing() {
       </div>
 
       {/* Features Section */}
-      <div className="relative z-10 px-6 lg:px-8 pb-24">
+      <div id="features-section" className="relative z-10 px-6 lg:px-8 pb-24">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center group">
