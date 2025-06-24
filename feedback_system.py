@@ -156,9 +156,9 @@ class FeedbackMemoryStore:
             return []
         
         try:
-            # Search for similar feedback
+            # Search for similar feedback - reduced multiplier for speed
             docs = self.feedback_stores[profile_name].similarity_search(
-                context, k=k*2  # Get more docs initially for better filtering
+                context, k=k*1  # Reduced from k*2 to k*1 for speed
             )
             
             # Filter by feedback type if specified
@@ -290,13 +290,13 @@ class FeedbackEnhancedGenerator:
         
         # Get relevant feedback for this context - separate positive and negative
         positive_feedback = self.feedback_store.get_relevant_feedback(
-            profile_name, context, feedback_type="positive", k=2
+            profile_name, context, feedback_type="positive", k=1
         )
         negative_feedback = self.feedback_store.get_relevant_feedback(
-            profile_name, context, feedback_type="negative", k=2
+            profile_name, context, feedback_type="negative", k=1
         )
         refinement_feedback = self.feedback_store.get_relevant_feedback(
-            profile_name, context, feedback_type="refinement", k=2
+            profile_name, context, feedback_type="refinement", k=1
         )
         
         # Build structured feedback context
@@ -332,72 +332,21 @@ class FeedbackEnhancedGenerator:
             
             feedback_context += "\nIMPORTANT: Use the positive patterns, avoid the negative patterns, and consider the refinement suggestions when generating the post.\n"
         
-        template = f"""You are an AI assistant helping to write LinkedIn posts in the user's authentic voice and style.
-
-Here are some examples of the user's writing style:
+        template = f"""Study these writing samples carefully:
 
 {"{style_examples}"}
 {feedback_context}
-Now create a LinkedIn post about the following topic:
+Write a LinkedIn post about: {"{context}"}
 
-Context: {"{context}"}
+Instructions: {"{custom_instruction}"}
 
-Additional Instructions: {"{custom_instruction}"}
-
-CRITICAL INSTRUCTIONS:
-- Write ONLY the LinkedIn post content - NO explanations or introductions
-- Do NOT include ANY meta-commentary, analysis, or descriptions
-- Do NOT mention feedback patterns, voice analysis, or the generation process
-- Do NOT start with phrases like "Here's a LinkedIn post", "Here's a post", "This post", etc.
-- Do NOT include any text that explains what you're doing
-- Start directly with the post content - as if you ARE the user posting
-- The first line should be the actual opening of the LinkedIn post
-
-ABSOLUTELY AVOID THESE AI-GENERATED CLICHÉS:
-❌ "Thrilled to announce"
-❌ "Excited to share"
-❌ "Proud to announce"
-❌ "Happy to share"
-❌ "Delighted to announce"
-❌ "Pleased to share"
-❌ "I'm excited to tell you"
-❌ Starting with emojis or excessive enthusiasm
-❌ Generic corporate speak
-❌ Overly promotional language
-
-INSTEAD, START WITH:
-✅ A direct statement or observation
-✅ A personal experience or story
-✅ A contrarian or thought-provoking statement
-✅ A problem or question that hooks the reader
-✅ A specific example or case study
-✅ Clean, professional, and conversational tone
-
-FOR TECHNICAL PROFILES, USE THIS EXACT FORMAT:
-→ Use ONLY arrows (→) for bullet points, NEVER use • or emojis
-→ Keep language clean and technical but conversational
-→ Include specific implementation details when relevant
-→ Follow problem → solution → how it works structure
-→ Avoid ALL emojis and promotional language
-→ Focus on the technical "why" and "how"
-
-EXAMPLE OF CORRECT BULLET FORMAT:
-→ First point with arrow
-→ Second point with arrow
-→ Third point with arrow
-
-NOT:
-• Standard bullet
-🔥 Emoji bullet
-- Dash bullet
-
-WRONG OUTPUT FORMAT (NEVER DO THIS):
-"Here's a LinkedIn post that matches your style:
-
-[post content]"
-
-CORRECT OUTPUT FORMAT (ALWAYS DO THIS):
-"[post content starts immediately]"
+CRITICAL:
+- Copy the EXACT writing style from the samples
+- Match the tone, structure, and language patterns  
+- Apply the feedback patterns above
+- NO explanations, NO meta-commentary
+- Write ONLY the post content
+- Follow the samples' style strictly - make NO assumptions
 
 LinkedIn Post:"""
 
@@ -437,9 +386,7 @@ LinkedIn Post:"""
         
         refinement_template = PromptTemplate(
             input_variables=["original_post", "feedback", "context"],
-            template="""You are helping to refine a LinkedIn post based on user feedback.
-
-Original Post:
+            template="""Original Post:
 {original_post}
 
 User Feedback:
@@ -447,12 +394,11 @@ User Feedback:
 
 Context: {context}
 
-CRITICAL INSTRUCTIONS:
-- Revise the post incorporating the feedback
-- Write ONLY the revised LinkedIn post content
-- Do NOT include explanations or meta-commentary
-- Do NOT mention the revision process
-- Write as if you ARE the user posting directly
+CRITICAL:
+- Apply the feedback exactly
+- Keep the original writing style
+- NO explanations, NO meta-commentary
+- Write ONLY the revised post content
 
 Revised Post:"""
         )

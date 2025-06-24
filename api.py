@@ -22,6 +22,7 @@ DEFAULT_MODEL = "llama3:8b"
 # Initialize feedback system (cached for performance)
 _feedback_store = None
 _feedback_generator = None
+_vectorstores = {}  # Cache vectorstores per profile
 
 def get_feedback_store():
     """Get cached feedback store instance"""
@@ -36,6 +37,13 @@ def get_feedback_generator():
     if _feedback_generator is None:
         _feedback_generator = FeedbackEnhancedGenerator(get_feedback_store())
     return _feedback_generator
+
+def get_cached_vectorstore(profile_name: str):
+    """Get cached vectorstore for profile"""
+    global _vectorstores
+    if profile_name not in _vectorstores:
+        _vectorstores[profile_name] = load_vectorstore(profile_name)
+    return _vectorstores[profile_name]
 
 # ------------------ Helpers ------------------
 
@@ -169,72 +177,20 @@ def format_samples_with_markers(samples: str) -> str:
 
 # LangChain prompt
 def build_prompt():
-    template = """You are an AI assistant helping to write LinkedIn posts in the author's authentic voice and style.
-
-Here are some examples of the author's writing style:
+    template = """Study these writing samples carefully:
 
 {style_examples}
 
-Now, create a LinkedIn post about the following topic:
+Write a LinkedIn post about: {context}
 
-Context: {context}
+Instructions: {custom_instruction}
 
-Additional Instructions: {custom_instruction}
-
-CRITICAL INSTRUCTIONS:
-- Write ONLY the LinkedIn post content - NO explanations or introductions
-- Do NOT include ANY meta-commentary, analysis, or descriptions
-- Do NOT mention voice analysis, style matching, or the generation process
-- Do NOT start with phrases like "Here's a LinkedIn post", "Here's a post", "This post", etc.
-- Do NOT include any text that explains what you're doing
-- Start directly with the post content - as if you ARE the user posting
-- The first line should be the actual opening of the LinkedIn post
-
-ABSOLUTELY AVOID THESE AI-GENERATED CLICHÉS:
-❌ "Thrilled to announce"
-❌ "Excited to share"
-❌ "Proud to announce"
-❌ "Happy to share"
-❌ "Delighted to announce"
-❌ "Pleased to share"
-❌ "I'm excited to tell you"
-❌ Starting with emojis or excessive enthusiasm
-❌ Generic corporate speak
-❌ Overly promotional language
-
-INSTEAD, START WITH:
-✅ A direct statement or observation
-✅ A personal experience or story
-✅ A contrarian or thought-provoking statement
-✅ A problem or question that hooks the reader
-✅ A specific example or case study
-✅ Clean, professional, and conversational tone
-
-FOR TECHNICAL PROFILES, USE THIS EXACT FORMAT:
-→ Use ONLY arrows (→) for bullet points, NEVER use • or emojis
-→ Keep language clean and technical but conversational
-→ Include specific implementation details when relevant
-→ Follow problem → solution → how it works structure
-→ Avoid ALL emojis and promotional language
-→ Focus on the technical "why" and "how"
-
-EXAMPLE OF CORRECT BULLET FORMAT:
-→ First point with arrow
-→ Second point with arrow
-→ Third point with arrow
-
-NOT:
-• Standard bullet
-🔥 Emoji bullet
-- Dash bullet
-
-WRONG OUTPUT FORMAT (NEVER DO THIS):
-"Here's a LinkedIn post that matches your style:
-
-[post content]"
-
-CORRECT OUTPUT FORMAT (ALWAYS DO THIS):
-"[post content starts immediately]"
+CRITICAL: 
+- Copy the EXACT writing style from the samples
+- Match the tone, structure, and language patterns
+- NO explanations, NO meta-commentary
+- Write ONLY the post content
+- Follow the samples' style strictly - make NO assumptions
 
 LinkedIn Post:"""
     return PromptTemplate(input_variables=["style_examples", "context", "custom_instruction"], template=template)
@@ -255,8 +211,8 @@ def load_vectorstore(profile_name: str):
 
 
 def generate_post(profile: str, context: str, instruction: str):
-    vectorstore = load_vectorstore(profile)
-    docs = vectorstore.similarity_search(context, k=3)
+    vectorstore = get_cached_vectorstore(profile)
+    docs = vectorstore.similarity_search(context, k=2)  # Reduced from 3 to 2
     examples = [d.page_content.strip() for d in docs if d.page_content.strip()]
     if not examples:
         raise ValueError("No style examples found for generation")
@@ -267,30 +223,36 @@ def generate_post(profile: str, context: str, instruction: str):
     result = chain.invoke({
         "style_examples": formatted,
         "context": context,
-        "custom_instruction": instruction or "Write in your authentic style."
+        "custom_instruction": instruction or "Write naturally."
     })
     return result.strip()
 
 def generate_post_with_feedback(profile: str, context: str, instruction: str):
-    """Generate post using feedback-enhanced generator"""
-    vectorstore = load_vectorstore(profile)
-    docs = vectorstore.similarity_search(context, k=3)
-    examples = [d.page_content.strip() for d in docs if d.page_content.strip()]
-    if not examples:
-        raise ValueError("No style examples found for generation")
-    
-    formatted = "\n\n".join([f"Example {i+1}:\n{ex}" for i, ex in enumerate(examples)])
-    
-    # Use cached feedback-enhanced generator
-    feedback_generator = get_feedback_generator()
-    result = feedback_generator.generate_with_feedback(
-        profile, context, instruction, formatted
-    )
-    
-    if not result:
-        raise ValueError("Failed to generate post")
-    
-    return result
+    """Generate post using feedback-enhanced generator with fallback"""
+    try:
+        vectorstore = get_cached_vectorstore(profile)
+        docs = vectorstore.similarity_search(context, k=2)  # Reduced from 3 to 2
+        examples = [d.page_content.strip() for d in docs if d.page_content.strip()]
+        if not examples:
+            raise ValueError("No style examples found for generation")
+        
+        formatted = "\n\n".join([f"Example {i+1}:\n{ex}" for i, ex in enumerate(examples)])
+        
+        # Use cached feedback-enhanced generator
+        feedback_generator = get_feedback_generator()
+        result = feedback_generator.generate_with_feedback(
+            profile, context, instruction, formatted
+        )
+        
+        if not result:
+            raise ValueError("Failed to generate post")
+        
+        return result
+        
+    except Exception as e:
+        print(f"⚡ Feedback generation failed: {e}")
+        # Fallback to basic generation
+        return generate_post(profile, context, instruction)
 
 # ------------------ API Schemas ------------------
 class ProfileCreate(BaseModel):
@@ -372,11 +334,19 @@ def api_append_samples(name: str = Path(...), body: SamplesAppend = ...):
 @app.post("/generate", response_model=GenerateResponse)
 def api_generate(body: GenerateRequest):
     try:
-        # Use feedback-enhanced generation by default
+        # Try feedback-enhanced generation first
         post = generate_post_with_feedback(body.profile, body.context, body.instruction)
         return {"result": post}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as feedback_error:
+        print(f"❌ Feedback generation failed: {feedback_error}")
+        try:
+            # Fallback to basic generation without feedback
+            print("🔄 Trying basic generation as fallback...")
+            post = generate_post(body.profile, body.context, body.instruction)
+            return {"result": post}
+        except Exception as basic_error:
+            print(f"❌ Basic generation also failed: {basic_error}")
+            raise HTTPException(status_code=500, detail=f"Generation failed - Feedback error: {feedback_error}, Basic error: {basic_error}")
 
 @app.post("/feedback")
 def api_submit_feedback(body: FeedbackRequest):

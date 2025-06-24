@@ -216,7 +216,7 @@ export function Home() {
 
               <TextArea
                 label="Instructions (Optional)"
-                placeholder="Any specific tone, style, or format you'd like? e.g., 'Make it more casual', 'Include a question', 'Keep it short'..."
+                placeholder="Keep it real and simple. Try: 'Start with the problem', 'Use arrows for steps', 'No hype words', 'End naturally'..."
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 minRows={3}
