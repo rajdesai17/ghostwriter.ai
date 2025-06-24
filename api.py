@@ -177,22 +177,27 @@ def format_samples_with_markers(samples: str) -> str:
 
 # LangChain prompt
 def build_prompt():
-    template = """Study these writing samples carefully:
+    template = """You are an expert ghostwriter. Your task is to write a new LinkedIn post that perfectly matches the author's voice and style.
 
+**1. Analyze the Author's Style**
+Carefully study these writing samples to understand the tone, structure, and language.
+---
 {style_examples}
+---
 
-Write a LinkedIn post about: {context}
+**2. Your Task: Write a New Post**
+Now, write a completely new LinkedIn post based on the following topic.
 
-Instructions: {custom_instruction}
+**Topic:** {context}
+**Additional Instructions:** {custom_instruction}
 
-CRITICAL: 
-- Copy the EXACT writing style from the samples
-- Match the tone, structure, and language patterns
-- NO explanations, NO meta-commentary
-- Write ONLY the post content
-- Follow the samples' style strictly - make NO assumptions
+**CRITICAL RULES:**
+- **DO NOT COPY THE SAMPLES.** Use them only to learn the style.
+- The output must be a **NEW** post about the provided topic.
+- Write **ONLY** the post content. No explanations or meta-commentary like "Here is a post...".
+- Match the style of the samples precisely.
 
-LinkedIn Post:"""
+**New LinkedIn Post:**"""
     return PromptTemplate(input_variables=["style_examples", "context", "custom_instruction"], template=template)
 
 

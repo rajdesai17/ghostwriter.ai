@@ -300,55 +300,66 @@ class FeedbackEnhancedGenerator:
         )
         
         # Build structured feedback context
-        feedback_context = ""
+        feedback_context = "No specific feedback for this context."
         
         if positive_feedback or negative_feedback or refinement_feedback:
-            feedback_context = "\nBased on previous user feedback for similar content:\n"
-            
+            parts = []
             if positive_feedback:
-                feedback_context += "\n✅ POSITIVE PATTERNS TO FOLLOW:\n"
+                fb_strings = []
                 for i, feedback in enumerate(positive_feedback):
                     lines = feedback['content'].split('\n')
                     feedback_text = next((line.split('Feedback:')[1].strip() for line in lines if 'Feedback:' in line), 'Unknown feedback')
-                    feedback_context += f"   {i+1}. {feedback_text}\n"
-            
+                    fb_strings.append(f"   {i+1}. {feedback_text}")
+                parts.append("✅ POSITIVE PATTERNS TO FOLLOW:\n" + "\n".join(fb_strings))
+
             if negative_feedback:
-                feedback_context += "\n❌ NEGATIVE PATTERNS TO AVOID:\n"
+                fb_strings = []
                 for i, feedback in enumerate(negative_feedback):
                     lines = feedback['content'].split('\n')
                     feedback_text = next((line.split('Feedback:')[1].strip() for line in lines if 'Feedback:' in line), 'Unknown feedback')
-                    feedback_context += f"   {i+1}. {feedback_text}\n"
+                    fb_strings.append(f"   {i+1}. {feedback_text}")
+                parts.append("❌ NEGATIVE PATTERNS TO AVOID:\n" + "\n".join(fb_strings))
             
             if refinement_feedback:
-                feedback_context += "\n🔄 REFINEMENT SUGGESTIONS TO CONSIDER:\n"
+                fb_strings = []
                 for i, feedback in enumerate(refinement_feedback):
                     lines = feedback['content'].split('\n')
                     feedback_text = next((line.split('Feedback:')[1].strip() for line in lines if 'Feedback:' in line), 'Unknown feedback')
                     refinement_text = next((line.split('Refinement:')[1].strip() for line in lines if 'Refinement:' in line and line.split('Refinement:')[1].strip()), None)
                     if refinement_text:
-                        feedback_context += f"   {i+1}. {feedback_text} → {refinement_text}\n"
+                        fb_strings.append(f"   {i+1}. {feedback_text} → {refinement_text}")
                     else:
-                        feedback_context += f"   {i+1}. {feedback_text}\n"
-            
-            feedback_context += "\nIMPORTANT: Use the positive patterns, avoid the negative patterns, and consider the refinement suggestions when generating the post.\n"
+                        fb_strings.append(f"   {i+1}. {feedback_text}")
+                parts.append("🔄 REFINEMENT SUGGESTIONS TO CONSIDER:\n" + "\n".join(fb_strings))
+
+            feedback_context = "\n\n".join(parts)
         
-        template = f"""Study these writing samples carefully:
+        template = f"""You are an expert ghostwriter. Your task is to write a new LinkedIn post that perfectly matches the author's voice and style, incorporating past feedback.
 
+**1. Analyze the Author's Style & Feedback**
+Carefully study these writing samples and user feedback to understand the tone, structure, and language.
+---
+**Style Samples:**
 {"{style_examples}"}
+---
+**User Feedback:**
 {feedback_context}
-Write a LinkedIn post about: {"{context}"}
+---
 
-Instructions: {"{custom_instruction}"}
+**2. Your Task: Write a New Post**
+Now, write a completely new LinkedIn post based on the following topic.
 
-CRITICAL:
-- Copy the EXACT writing style from the samples
-- Match the tone, structure, and language patterns  
-- Apply the feedback patterns above
-- NO explanations, NO meta-commentary
-- Write ONLY the post content
-- Follow the samples' style strictly - make NO assumptions
+**Topic:** {"{context}"}
+**Additional Instructions:** {"{custom_instruction}"}
 
-LinkedIn Post:"""
+**CRITICAL RULES:**
+- **DO NOT COPY THE SAMPLES.** Use them only to learn the style.
+- The output must be a **NEW** post about the provided topic.
+- **APPLY THE USER FEEDBACK.** This is crucial for improvement.
+- Write **ONLY** the post content. No explanations or meta-commentary like "Here is a post...".
+- Match the style of the samples precisely.
+
+**New LinkedIn Post:**"""
 
         return PromptTemplate(
             input_variables=["style_examples", "context", "custom_instruction"],
